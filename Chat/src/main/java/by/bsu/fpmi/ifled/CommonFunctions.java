@@ -1,17 +1,13 @@
-import javax.servlet.*;
-import javax.servlet.http.*;
+package by.bsu.fpmi.ifled;
 
-import java.io.*;
-import java.util.*;
-import java.util.Date;
+import java.io.PrintStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 
-import java.sql.*;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 public class CommonFunctions {
 	public static String getUserId(Connection con, String username, 

@@ -1,18 +1,20 @@
-import javax.servlet.*;
-import javax.servlet.http.*;
+package by.bsu.fpmi.ifled;
 
-import java.io.*;
-import java.util.*;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
-import java.sql.*;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
-
-
+@WebServlet("/First")
 public class FirstServlet extends HttpServlet {
 
     final PrintStream err = System.err;
@@ -21,34 +23,27 @@ public class FirstServlet extends HttpServlet {
     static Connection connection;
     
     public void init(ServletConfig config) {
+
 		String now = CommonFunctions.nowTime();
         err.println(now + " " + myName + ": init");
-        
-        String username = config.getInitParameter("username");
-        String password = config.getInitParameter("password");
-        String database = config.getInitParameter("database");
-        
-        ServletContext context = config.getServletContext();
-        context.setAttribute("username", username);
-        context.setAttribute("password", password);
-        context.setAttribute("database", database);
-        
+
         try {
-            err.println(myName + ": try to load org.postgresql.Driver");
-            Class.forName("org.postgresql.Driver");
+            err.println(myName + ": try to load " + ServletConstants.DB_DRIVER);
+            Class.forName(ServletConstants.DB_DRIVER);
         }
         catch (ClassNotFoundException cfe) {
             err.println(myName + ": So sad");
             err.println(cfe.getMessage());
-            
+
             cfe.printStackTrace();
             System.exit(1);
         }
-        
+
         try {
 			err.println(myName + ": try to get connection");
-            connection = DriverManager.getConnection(database, username,
-                                                     password);
+            connection = DriverManager.getConnection(ServletConstants.DB_NAME,
+                    ServletConstants.DB_USERNAME,
+                    ServletConstants.DB_PASSWORD);
         }
         catch (SQLException se) {
             err.println(myName + ": So sad 2");
@@ -78,11 +73,11 @@ public class FirstServlet extends HttpServlet {
         String username = request.getParameter("username");
 		
 		String userId;
-        
-        userId = CommonFunctions.getUserId(connection, username, 
+
+        userId = CommonFunctions.getUserId(connection, username,
 		                                   myName, err);
         out.println(userId);
-        
+
         err.println(myName + " - userId: " + userId);
         
         err.println(myName + ": after all");

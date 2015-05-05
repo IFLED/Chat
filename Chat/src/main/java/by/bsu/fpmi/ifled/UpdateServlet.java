@@ -1,16 +1,21 @@
-import javax.servlet.*;
-import javax.servlet.http.*;
+package by.bsu.fpmi.ifled;
 
-import java.io.*;
-import java.util.*;
-
-import java.sql.*;
-
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.sql.*;
+
+@WebServlet("/Update")
 public class UpdateServlet extends HttpServlet {
 
     final PrintStream err = System.err;
@@ -21,32 +26,26 @@ public class UpdateServlet extends HttpServlet {
     static Connection connection;
    
     public void init(ServletConfig config) {
-        err.println(myName + ": init");
-    
-        ServletContext context = config.getServletContext();
-        String username = (String)context.getAttribute("username");
-        String password = (String)context.getAttribute("password");
-        String database = (String)context.getAttribute("database");
-    
-        //err.println("| " + username + " " + password + " " + database + " |");
-    
+        String now = CommonFunctions.nowTime();
+        err.println(now + " " + myName + ": init");
+
         try {
-            err.println(myName + ": try to load class");
-            Class.forName("org.postgresql.Driver");
+            err.println(myName + ": try to load " + ServletConstants.DB_DRIVER);
+            Class.forName(ServletConstants.DB_DRIVER);
         }
         catch (ClassNotFoundException cfe) {
             err.println(myName + ": So sad");
             err.println(cfe.getMessage());
-            
+
             cfe.printStackTrace();
             System.exit(1);
         }
-        
+
         try {
-            connection = DriverManager.getConnection(database, username,
-                                                     password);
-            /*connection = 
-       DriverManager.getConnection("jdbc:postgresql://localhost:5432/Test", "IFLED", "4321");*/
+            err.println(myName + ": try to get connection");
+            connection = DriverManager.getConnection(ServletConstants.DB_NAME,
+                    ServletConstants.DB_USERNAME,
+                    ServletConstants.DB_PASSWORD);
         }
         catch (SQLException se) {
             err.println(myName + ": So sad 2");
@@ -55,14 +54,14 @@ public class UpdateServlet extends HttpServlet {
             //System.out.println(se.getMessage());
             System.exit(2);
         }
-		
-		
+
+
 		try {
 			Statement statement = connection.createStatement();
 			String sql = "SELECT MAX(message_id), MAX(action_id) " +
 			             "FROM messages;";
 			ResultSet result = statement.executeQuery(sql);
-			
+
 			if (!result.next()) {
 				// There is no any messages in db
 				action_id = 0;
@@ -76,7 +75,7 @@ public class UpdateServlet extends HttpServlet {
 		catch (SQLException se) {
 			err.println(myName + ": " + se.getMessage());
 		}
-		
+
 		err.println(myName + ": init done!");
 		//err.println(message_id + " " + action_id);
     }
@@ -89,15 +88,15 @@ public class UpdateServlet extends HttpServlet {
         
         PrintWriter out = response.getWriter();
         
-        response.setHeader("Access-Control-Allow-Origin", 
-                           "*");
+        //response.setHeader("Access-Control-Allow-Origin",
+        //                   "*");
 
         String message  = request.getParameter("message");
         String session_id = request.getParameter("session_id");
 		err.println(session_id);
-		
+
 		int result = update(session_id, message, out);
-		//err.println(result);
+		err.println(result);
 		
 		out.println(result);
 		
@@ -188,8 +187,6 @@ public class UpdateServlet extends HttpServlet {
 			err.println(e.getMessage());
 			return -5;
 		}
-		
-		
 		
 		return 0;
 	}

@@ -10,11 +10,11 @@
         <![endif]-->
     <title>The Chat</title>
     <!-- BOOTSTRAP CORE STYLE CSS -->
-    <link href="css/bootstrap.css" rel="stylesheet" />
-    <link href="css/custom.css" rel="stylesheet" />
+    <link href="resources/css/bootstrap.css" rel="stylesheet" />
+    <link href="resources/css/custom.css" rel="stylesheet" />
     
     
-    <script src="js/respond.js"></script>
+    <script src="resources/js/respond.js"></script>
     <link href='http://fonts.googleapis.com/css?family=Droid+Serif:400,700' rel='stylesheet' type='text/css'>
     
     
@@ -45,7 +45,7 @@
      <li class="media hidden" data-mesID = "1" > <!-- This as template For messages -->
         <div class="mes">
             <div class="media">
-                <a class="pull-left" href="#"><img class="media-object img-circle " src="assets/img/ava.png" /></a>
+                <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/ava.png" /></a>
                 <div class="media-body" >
                     <p class="MessageHeader">
                         <span class="NickName">Anton Dosov</span> &middot <span class="Time"> 23:54  </span>
@@ -61,7 +61,7 @@
     <li class="media" data-mesID = "-1">
         <div class="mes">
             <div class="media">
-                <a class="pull-left" href="#"><img class="media-object img-circle " src="assets/img/anton.jpg" /></a>
+                <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/anton.jpg" /></a>
                 <div class="media-body" >
                     <p class="MessageHeader">
                         <span class="NickName">Anton Dosov</span> &middot 23:54 
@@ -77,7 +77,7 @@
     <li class="media" data-mesID = "-1">
         <div class="mes">
             <div class="media">
-                <a class="pull-left" href="#"><img class="media-object img-circle " src="assets/img/taylor.jpg" /></a>
+                <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/taylor.jpg" /></a>
                 <div class="media-body" >
                     <p class="MessageHeader">
                         <span class="NickName">Taylor Swift</span> &middot 23:54 
@@ -93,7 +93,7 @@
     <li class="media" data-mesID = "-1">
         <div class="mes">
             <div class="media">
-                <a class="pull-left" href="#"><img class="media-object img-circle " src="assets/img/anton.jpg" /></a>
+                <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/anton.jpg" /></a>
                 <div class="media-body" >
                     <p class="MessageHeader">
                         <span class="NickName">Anton Dosov</span> &middot 23:54 
@@ -109,7 +109,7 @@
     <li class="media" data-mesID = "-1" >
         <div class="mes">
             <div class="media">
-                <a class="pull-left" href="#"><img class="media-object img-circle " src="assets/img/lebron.jpg" /></a>
+                <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/lebron.jpg" /></a>
                 <div class="media-body" >
                     <p class="MessageHeader">
                         <span class="NickName">Lebron James</span> &middot 23:54 
@@ -124,7 +124,7 @@
 <li class="media" data-mesID = "-1">
         <div class="mes">
             <div class="media">
-                <a class="pull-left" href="#"><img class="media-object img-circle " src="assets/img/anton.jpg" /></a>
+                <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/anton.jpg" /></a>
                 <div class="media-body" >
                     <p class="MessageHeader">
                         <span class="NickName">Anton Dosov</span> &middot 23:54 
@@ -140,7 +140,7 @@
     <li class="media" data-mesID = "-1" >
         <div class="mes">
             <div class="media">
-                <a class="pull-left" href="#"><img class="media-object img-circle " src="assets/img/dasha.jpg" /></a>
+                <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/dasha.jpg" /></a>
                 <div class="media-body" >
                     <p class="MessageHeader">
                         <span class="NickName">Dasha Pronevich</span> &middot 23:54 
@@ -156,7 +156,7 @@
     <li class="media" data-mesID = "-1" >
         <div class="mes">
             <div class="media">
-                <a class="pull-left" href="#"><img class="media-object img-circle " src="assets/img/anton.jpg" /></a>
+                <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/anton.jpg" /></a>
                 <div class="media-body" >
                     <p class="MessageHeader">
                         <span class="NickName">Anton Dosov</span> &middot 23:54 
@@ -172,7 +172,7 @@
     <li class="media" data-mesID = "-1">
         <div class="mes">
             <div class="media">
-                <a class="pull-left" href="#"><img class="media-object img-circle " src="assets/img/some.jpg" /></a>
+                <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/some.jpg" /></a>
                 <div class="media-body" >
                     <p class="MessageHeader">
                         <span class="NickName">SomeGuy</span> &middot 23:54 
@@ -188,7 +188,7 @@
    <li class="media" data-mesID = "-1">
         <div class="mes">
             <div class="media">
-                <a class="pull-left" href="#"><img class="media-object img-circle " src="assets/img/taylor.jpg" /></a>
+                <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/taylor.jpg" /></a>
                 <div class="media-body" >
                     <p class="MessageHeader">
                         <span class="NickName">Taylor Swift</span> &middot 23:54 
@@ -279,7 +279,7 @@ Love’s a game, want to play?</span>
                     
                     <div class="media NameChangeForm">
                         <a class="pull-left" href="#">
-                            <img class="media-object img-circle img-nameForm " src="assets/img/anton.jpg" />                           </a>
+                            <img class="media-object img-circle img-nameForm " src="resources/assets/img/anton.jpg" />                           </a>
                             <div class="media-body" style="max-Width: 300px" >
                                 <input class="form-control"  id="NameForm" placeholder="Your Beautiful Name Is ..."  >
                                 </input>    
@@ -314,9 +314,9 @@ Love’s a game, want to play?</span>
 
   <!-- javascript -->
     <script src="http://code.jquery.com/jquery-latest.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/jquery.transit.js"></script>
-    <script src="js/script.js"></script>
+    <script src="resources/js/bootstrap.min.js"></script>
+    <script src="resources/js/jquery.transit.js"></script>
+    <script src="resources/js/script.js"></script>
     
     
 

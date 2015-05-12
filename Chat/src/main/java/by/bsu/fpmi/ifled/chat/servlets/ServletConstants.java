@@ -1,4 +1,4 @@
-package by.bsu.fpmi.ifled;
+package by.bsu.fpmi.ifled.chat.servlets;
 
 public class ServletConstants {
     final static String DB_DRIVER = "org.postgresql.Driver";

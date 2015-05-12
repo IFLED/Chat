@@ -1,4 +1,8 @@
-package by.bsu.fpmi.ifled;
+package by.bsu.fpmi.ifled.chat.servlets;
+
+import by.bsu.fpmi.ifled.chat.models.DbStorage;
+import by.bsu.fpmi.ifled.chat.models.Storage;
+import by.bsu.fpmi.ifled.chat.utils.CommonFunctions;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -12,6 +16,8 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+
+import static by.bsu.fpmi.ifled.chat.servlets.ServletConstants.*;
 
 
 @WebServlet("/First")
@@ -74,8 +80,15 @@ public class FirstServlet extends HttpServlet {
 		
 		String userId;
 
-        userId = CommonFunctions.getUserId(connection, username,
-		                                   myName, err);
+        Storage storage = new DbStorage(myName, err, DB_DRIVER, DB_NAME,
+                                        DB_USERNAME, DB_PASSWORD);
+
+        //userId = CommonFunctions.getUserId(connection, username,
+		//                                   myName, err);
+
+        userId = new Integer(storage.getUserId(username)).toString();
+        storage.getUsername(storage.getUserId(username));
+
         out.println(userId);
 
         err.println(myName + " - userId: " + userId);

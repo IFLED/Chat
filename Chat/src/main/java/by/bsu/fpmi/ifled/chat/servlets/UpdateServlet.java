@@ -1,5 +1,8 @@
-package by.bsu.fpmi.ifled;
+package by.bsu.fpmi.ifled.chat.servlets;
 
+import by.bsu.fpmi.ifled.chat.models.DbStorage;
+import by.bsu.fpmi.ifled.chat.models.Storage;
+import by.bsu.fpmi.ifled.chat.utils.CommonFunctions;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -14,6 +17,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.sql.*;
+
+import static by.bsu.fpmi.ifled.chat.servlets.ServletConstants.*;
 
 @WebServlet("/Update")
 public class UpdateServlet extends HttpServlet {
@@ -131,9 +136,12 @@ public class UpdateServlet extends HttpServlet {
 			Statement statement = connection.createStatement();
 			
 			if (status.equals("new")) {
-				String user_id = CommonFunctions.getUserId(connection, 
-													username, myName, err);
-				if (user_id.charAt(0) == '-') {
+                Storage storage = new DbStorage(myName, err, DB_DRIVER, DB_NAME,
+                                                DB_USERNAME, DB_PASSWORD);
+                int user_id = storage.getUserId(username);
+				//String user_id = CommonFunctions.getUserId(connection,
+				//									username, myName, err);
+				if (user_id < 0) {
 					err.println("there are some errors");
 					return -3;
 				}

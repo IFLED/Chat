@@ -134,7 +134,7 @@ function run() { // start of app. data restore.
        var getRequest = newGetRequest(session_id,actionID,currentUserName)
        getAction(getRequest); // getNewActions 
        
-    }, 5000)
+    }, 1000)
 }
 
 

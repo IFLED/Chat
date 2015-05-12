@@ -58,7 +58,7 @@
         </div>
     </li>                   
                  
-    <li class="media" data-mesID = "-1">
+    <li class="media hidden" data-mesID = "-1">
         <div class="mes">
             <div class="media">
                 <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/anton.jpg" /></a>
@@ -74,7 +74,7 @@
         </div>
     </li>
                         
-    <li class="media" data-mesID = "-1">
+    <li class="media hidden" data-mesID = "-1">
         <div class="mes">
             <div class="media">
                 <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/taylor.jpg" /></a>
@@ -90,7 +90,7 @@
         </div>
     </li> 
 
-    <li class="media" data-mesID = "-1">
+    <li class="media hidden" data-mesID = "-1">
         <div class="mes">
             <div class="media">
                 <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/anton.jpg" /></a>
@@ -106,7 +106,7 @@
         </div>
     </li>
                         
-    <li class="media" data-mesID = "-1" >
+    <li class="media hidden" data-mesID = "-1" >
         <div class="mes">
             <div class="media">
                 <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/lebron.jpg" /></a>
@@ -121,7 +121,7 @@
              </div>
         </div>
     </li>
-<li class="media" data-mesID = "-1">
+<li class="media hidden" data-mesID = "-1">
         <div class="mes">
             <div class="media">
                 <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/anton.jpg" /></a>
@@ -137,7 +137,7 @@
         </div>
     </li>
                         
-    <li class="media" data-mesID = "-1" >
+    <li class="media hidden" data-mesID = "-1" >
         <div class="mes">
             <div class="media">
                 <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/dasha.jpg" /></a>
@@ -153,7 +153,7 @@
         </div>
     </li> 
 
-    <li class="media" data-mesID = "-1" >
+    <li class="media hidden" data-mesID = "-1" >
         <div class="mes">
             <div class="media">
                 <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/anton.jpg" /></a>
@@ -169,7 +169,7 @@
         </div>
     </li>
                         
-    <li class="media" data-mesID = "-1">
+    <li class="media hidden" data-mesID = "-1">
         <div class="mes">
             <div class="media">
                 <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/some.jpg" /></a>
@@ -185,7 +185,7 @@
         </div>
     </li>  
                         
-   <li class="media" data-mesID = "-1">
+   <li class="media hidden" data-mesID = "-1">
         <div class="mes">
             <div class="media">
                 <a class="pull-left" href="#"><img class="media-object img-circle " src="resources/assets/img/taylor.jpg" /></a>

@@ -1,5 +1,6 @@
 package by.bsu.fpmi.ifled.chat.models;
 
+import by.bsu.fpmi.ifled.chat.utils.CommonFunctions;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -70,22 +71,103 @@ public class DbStorage extends Storage {
 
     @Override
     public int addMessage(String username, int room_id, String text) {
-        return 0;
+        int user_id = getUserId(username);
+        if (user_id < 0) {
+            console.println("there are some errors");
+            return -3;
+        }
+
+        Connection connection = openConnection();
+        if (connection == null) {
+            return -4;
+        }
+
+        int message_id = getMessageId();
+        int action_id = getActionId();
+        String time = CommonFunctions.nowTime();
+
+        try {
+            Statement statement = connection.createStatement();
+
+            String sql = "INSERT INTO messages VALUES (" +
+                    (message_id++) + ", " + (user_id) + ", " +
+                    room_id + ", " + (action_id++) + ", '" +
+                    text + "', 1, '" + time + "');";
+
+            statement.executeUpdate(sql);
+            connection.close();
+
+            return 0;
+        }
+        catch (SQLException se) {
+            console.println(servletName + ": " + se.getMessage());
+            return -2;
+        }
     }
 
     @Override
     public int editMessage(String text, int message_id) {
-        return 0;
+        Connection connection = openConnection();
+        if (connection == null) {
+            return -4;
+        }
+
+        int action_id = getActionId();
+        String time = CommonFunctions.nowTime();
+
+        try {
+            Statement statement = connection.createStatement();
+
+            String sql = "UPDATE messages SET text = '" +
+                    text + "', " + "action_id = " +
+                    (action_id++) + ", status = 2, time = '" +
+                    time + "' WHERE message_id = " +
+                    message_id + ";";
+            console.println(sql);
+            statement.executeUpdate(sql);
+            connection.close();
+
+            return 0;
+        }
+        catch (SQLException se) {
+            console.println(servletName + ": " + se.getMessage());
+            return -2;
+        }
     }
 
     @Override
     public int deleteMessage(int message_id) {
-        return 0;
+        Connection connection = openConnection();
+        if (connection == null) {
+            return -4;
+        }
+
+        int action_id = getActionId();
+        String time = CommonFunctions.nowTime();
+
+        try {
+            Statement statement = connection.createStatement();
+
+            String sql = "UPDATE messages SET text = ''," +
+                    "action_id = " +
+                    (action_id++) + ", status = 3, time = '" +
+                    time + "' WHERE message_id = " +
+                    message_id + ";";
+            console.println(sql);
+            statement.executeUpdate(sql);
+            connection.close();
+
+            return 0;
+        }
+        catch (SQLException se) {
+            console.println(servletName + ": " + se.getMessage());
+            return -2;
+        }
     }
 
     @Override
     public String getUsername(int user_id) {
-        console.println(servletName + " : getUsername " + user_id);
+        //console.println(servletName + " : getUsername " + user_id);
 
         Connection con = openConnection();
         if (con == null) {
@@ -129,7 +211,7 @@ public class DbStorage extends Storage {
 
     @Override
     public int getUserId(String username) {
-        console.println(servletName + " : getUserId " + username);
+        //console.println(servletName + " : getUserId " + username);
 
         Connection con = openConnection();
         if (con == null) {
@@ -171,15 +253,75 @@ public class DbStorage extends Storage {
         }
     }
 
+    private int getMessageId() {
+        Connection connection = openConnection();
+        if (connection == null) {
+            return -4;
+        }
+
+        int message_id;
+        try {
+            Statement statement = connection.createStatement();
+            String sql = "SELECT MAX(message_id) " + "FROM messages;";
+            ResultSet result = statement.executeQuery(sql);
+
+            if (!result.next()) {
+                // There is no any messages in db
+                message_id = 0;
+            }
+            else {
+                message_id = result.getInt(1) + 1;
+            }
+
+            connection.close();
+
+            return message_id;
+        }
+        catch (SQLException se) {
+            console.println(servletName + ": " + se.getMessage());
+            return -5;
+        }
+    }
+
+    private int getActionId() {
+        Connection connection = openConnection();
+        if (connection == null) {
+            return -4;
+        }
+
+        int action_id;
+        try {
+            Statement statement = connection.createStatement();
+            String sql = "SELECT MAX(action_id) " + "FROM messages;";
+            ResultSet result = statement.executeQuery(sql);
+
+            if (!result.next()) {
+                // There is no any messages in db
+                action_id = 0;
+            }
+            else {
+                action_id = result.getInt(1) + 1;
+            }
+
+            connection.close();
+
+            return action_id;
+        }
+        catch (SQLException se) {
+            console.println(servletName + ": " + se.getMessage());
+            return -5;
+        }
+    }
+
     private Connection openConnection() {
 
         Connection connection = null;
 
         try {
-            console.println(servletName + ": try to load " + dbDriver);
+            //console.println(servletName + ": try to load " + dbDriver);
             Class.forName(dbDriver);
 
-            console.println(servletName + ": try to get connection");
+            //console.println(servletName + ": try to get connection");
             connection = DriverManager.getConnection(dbName, dbUsername,
                     dbPassword);
         }

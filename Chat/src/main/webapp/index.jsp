@@ -313,7 +313,8 @@ Love’s a game, want to play?</span>
     
 
   <!-- javascript -->
-    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="resources/js/jquery-latest.min.js"></script>
+    <!-- <script src="http://code.jquery.com/jquery-latest.min.js"></script> -->
     <script src="resources/js/bootstrap.min.js"></script>
     <script src="resources/js/jquery.transit.js"></script>
     <script src="resources/js/script.js"></script>

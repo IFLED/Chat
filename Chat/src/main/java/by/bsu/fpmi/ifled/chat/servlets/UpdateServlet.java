@@ -4,7 +4,8 @@ import by.bsu.fpmi.ifled.chat.models.DbStorage;
 import by.bsu.fpmi.ifled.chat.models.Storage;
 import by.bsu.fpmi.ifled.chat.utils.CommonFunctions;
 import by.bsu.fpmi.ifled.chat.utils.LongPolling;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -16,7 +17,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
@@ -24,20 +24,18 @@ import static by.bsu.fpmi.ifled.chat.servlets.ServletConstants.*;
 
 @WebServlet("/Update")
 public class UpdateServlet extends HttpServlet {
-
-    final PrintStream err = System.err;
-    final String myName = "UpdateServlet";
+    private static final Logger logger = LogManager.getLogger(UpdateServlet.class);
    
     public void init(ServletConfig config) {
-        String now = CommonFunctions.nowTime();
-        err.println(now + " " + myName + ": init");
-
-		err.println(myName + ": init done!");
+        logger.entry(config);
+		logger.exit();
     }
 
     public void doPost(HttpServletRequest request, 
                       HttpServletResponse response)
             throws ServletException, IOException {
+        logger.entry(request, response);
+
         response.setContentType("text/html");
         response.setCharacterEncoding("UTF-8");
         
@@ -48,30 +46,32 @@ public class UpdateServlet extends HttpServlet {
 
         String message  = request.getParameter("message");
         String session_id = request.getParameter("session_id");
-		err.println(session_id);
+        logger.debug("session_id = ", session_id);
 
-		int result = update(session_id, message, out);
-		err.println(result);
+		int result = update(session_id, message);
+		logger.debug("result = ", result);
 
-        err.println(myName + ": after all");
+        logger.exit();
     }
 	
-	int update(String sessionId, String jsonMessage, PrintWriter out) {
+	int update(String sessionId, String jsonMessage) {
+        logger.entry(sessionId, jsonMessage);
+
 		JSONParser parser = new JSONParser();
 		JSONObject obj;
 		try {
 			obj = (JSONObject)parser.parse(jsonMessage);
 		}
 		catch (ParseException pe) {
-			err.println(myName + ": " + pe.getMessage());
-			return -1;
+			logger.catching(pe);
+			return logger.exit(-1);
 		}
 
         int ret = 0;
         int room_id = -1; // will be defined later
 		String status = (String)obj.get("status");
-        Storage storage = new DbStorage(myName, err, DB_DRIVER, DB_NAME,
-                DB_USERNAME, DB_PASSWORD);
+        Storage storage = new DbStorage(DB_DRIVER, DB_NAME,
+                                        DB_USERNAME, DB_PASSWORD);
 		try {
 			if (status.equals("new")) {
                 String username = (String)obj.get("username");
@@ -98,23 +98,25 @@ public class UpdateServlet extends HttpServlet {
 			}
 		}
 //		catch (SQLException se) {
-//			err.println(myName + ": " + se.getMessage());
-//			return -2;
+//			logger.catching(se);
+//			return logger.exit(-2);
 //		}
 		catch (Exception e) {
-			err.println(e.getMessage());
+			logger.catching(e);
 			ret = -5;
 		}
 
         respondToAllInRoom(storage, room_id);
 		
-		return ret;
+		return logger.exit(ret);
 	}
 
     void respondToAllInRoom(Storage storage, int room_id) {
+        logger.entry(storage, room_id);
+
         ArrayList<Integer> users;
         users = storage.getUserIdInRoom(room_id);
-        err.println("users: " + users);
+        logger.debug("users: ", users);
 
         for (Integer user_id : users) {
             int action_id = LongPolling.getInstance().getActionId(user_id);
@@ -125,5 +127,6 @@ public class UpdateServlet extends HttpServlet {
             String response = storage.getMessages(action_id, username);
             LongPolling.getInstance().respond(user_id, response);
         }
+        logger.exit();
     }
 }

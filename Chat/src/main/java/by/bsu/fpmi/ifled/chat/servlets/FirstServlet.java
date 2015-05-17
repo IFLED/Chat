@@ -2,7 +2,8 @@ package by.bsu.fpmi.ifled.chat.servlets;
 
 import by.bsu.fpmi.ifled.chat.models.DbStorage;
 import by.bsu.fpmi.ifled.chat.models.Storage;
-import by.bsu.fpmi.ifled.chat.utils.CommonFunctions;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -11,53 +12,22 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 
 import static by.bsu.fpmi.ifled.chat.servlets.ServletConstants.*;
 
 
 @WebServlet("/First")
 public class FirstServlet extends HttpServlet {
-
-    final PrintStream err = System.err;
-    final String myName = "FirstServlet";
+    private static final Logger logger = LogManager.getLogger(FirstServlet.class);
 
     static Connection connection;
     
     public void init(ServletConfig config) {
+		logger.entry(config);
 
-		String now = CommonFunctions.nowTime();
-        err.println(now + " " + myName + ": init");
-
-        try {
-            err.println(myName + ": try to load " + ServletConstants.DB_DRIVER);
-            Class.forName(ServletConstants.DB_DRIVER);
-        }
-        catch (ClassNotFoundException cfe) {
-            err.println(myName + ": So sad");
-            err.println(cfe.getMessage());
-
-            cfe.printStackTrace();
-            System.exit(1);
-        }
-
-        try {
-			err.println(myName + ": try to get connection");
-            connection = DriverManager.getConnection(ServletConstants.DB_NAME,
-                    ServletConstants.DB_USERNAME,
-                    ServletConstants.DB_PASSWORD);
-        }
-        catch (SQLException se) {
-            err.println(myName + ": So sad 2");
-            err.println();
-            se.printStackTrace();
-            //System.out.println(se.getMessage());
-            System.exit(2);
-        }
+        logger.exit();
     }
 	
 	public void doGet(HttpServletRequest request, 
@@ -68,6 +38,8 @@ public class FirstServlet extends HttpServlet {
     public void doPost(HttpServletRequest request,
                       HttpServletResponse response)
             throws ServletException, IOException {
+        logger.entry(request, response);
+
         response.setContentType("text/html");
         response.setCharacterEncoding("UTF-8");
         
@@ -80,7 +52,7 @@ public class FirstServlet extends HttpServlet {
 		
 		String userId;
 
-        Storage storage = new DbStorage(myName, err, DB_DRIVER, DB_NAME,
+        Storage storage = new DbStorage(DB_DRIVER, DB_NAME,
                                         DB_USERNAME, DB_PASSWORD);
 
         //userId = CommonFunctions.getUserId(connection, username,
@@ -92,8 +64,8 @@ public class FirstServlet extends HttpServlet {
         out.println(userId);
         out.close();
 
-        err.println(myName + " - userId: " + userId);
+        logger.debug("userId: " + userId);
         
-        err.println(myName + ": after all");
+        logger.exit();
     }
 }

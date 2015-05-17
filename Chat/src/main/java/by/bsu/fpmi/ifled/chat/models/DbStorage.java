@@ -1,10 +1,11 @@
 package by.bsu.fpmi.ifled.chat.models;
 
 import by.bsu.fpmi.ifled.chat.utils.CommonFunctions;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import java.io.PrintStream;
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -14,10 +15,10 @@ public class DbStorage extends Storage {
     private String dbUsername;
     private String dbPassword;
 
-    public DbStorage(String servletName, PrintStream console, String dbDriver,
-              String dbName, String dbUsername, String dbPassword) {
-        this.console = console;
-        this.servletName = servletName;
+    private static final Logger logger = LogManager.getLogger(DbStorage.class);
+
+    public DbStorage(String dbDriver, String dbName, String dbUsername,
+                     String dbPassword) {
         this.dbDriver = dbDriver;
         this.dbName= dbName;
         this.dbUsername = dbUsername;
@@ -27,13 +28,18 @@ public class DbStorage extends Storage {
 
     @Override
     public String getMessages(int action_id, String username) {
+        logger.entry(action_id, username);
         int user_id = getUserId(username);
         if (user_id < 0) {
-            console.println(servletName + ": there are some errors");
-            return "#3";
+            logger.error("can't get user_id");
+            return logger.exit("#3");
         }
 
         Connection connection = openConnection();
+        if (connection == null) {
+            logger.error("can't open connection");
+            return logger.exit("#4");
+        }
 
         try {
             Statement statement = connection.createStatement();
@@ -42,7 +48,7 @@ public class DbStorage extends Storage {
                     "(SELECT room_id FROM links WHERE user_id = " +
                     user_id + ") and action_id > " + action_id +
                     " ORDER BY message_id;";
-            //err.println(sql);
+            logger.debug(sql);
             ResultSet result = statement.executeQuery(sql);
 
             JSONObject answer = new JSONObject();
@@ -52,8 +58,8 @@ public class DbStorage extends Storage {
                 int user_id_now = result.getInt(2);
                 String user = getUsername(user_id_now);
                 if (user.charAt(0) == '#') {
-                    console.println(servletName + ": invalid user_id " + user);
-                    return "#4";
+                    logger.error("invalid user_id " + user);
+                    return logger.exit("#4");
                 }
                 JSONObject msg = new Message(result, user).toJsonObject();
                 messages.add(msg);
@@ -61,26 +67,28 @@ public class DbStorage extends Storage {
 
             answer.put("messages", messages);
 
-            return answer.toJSONString();
+            return logger.exit(answer.toJSONString());
 
         }
         catch (SQLException se) {
-            console.println(servletName + ": " + se.getMessage());
-            return "#2";
+            logger.catching(se);
+            return logger.exit("#2");
         }
     }
 
     @Override
     public int addMessage(String username, int room_id, String text) {
+        logger.entry(username, room_id, text);
         int user_id = getUserId(username);
         if (user_id < 0) {
-            console.println("there are some errors");
-            return -3;
+            logger.error("cant't get user_id");
+            return logger.exit(-3);
         }
 
         Connection connection = openConnection();
         if (connection == null) {
-            return -4;
+            logger.error("can't open connection");
+            return logger.exit(-4);
         }
 
         int message_id = getMessageId();
@@ -94,23 +102,27 @@ public class DbStorage extends Storage {
                     (message_id++) + ", " + (user_id) + ", " +
                     room_id + ", " + (action_id++) + ", '" +
                     text + "', 1, '" + time + "');";
-
+            logger.debug(sql);
             statement.executeUpdate(sql);
             connection.close();
 
-            return 0;
+            return logger.exit(0);
         }
         catch (SQLException se) {
-            console.println(servletName + ": " + se.getMessage());
-            return -2;
+            logger.catching(se);
+
+            return logger.exit(-2);
         }
     }
 
     @Override
     public int editMessage(String text, int message_id) {
+        logger.entry(text, message_id);
+
         Connection connection = openConnection();
         if (connection == null) {
-            return -4;
+            logger.error("can't get connection");
+            return logger.exit(-4);
         }
 
         int action_id = getActionId();
@@ -124,15 +136,15 @@ public class DbStorage extends Storage {
                     (action_id++) + ", status = 2, time = '" +
                     time + "' WHERE message_id = " +
                     message_id + ";";
-            console.println(sql);
+            logger.debug(sql);
             statement.executeUpdate(sql);
             connection.close();
 
-            return 0;
+            return logger.exit(0);
         }
         catch (SQLException se) {
-            console.println(servletName + ": " + se.getMessage());
-            return -2;
+            logger.catching(se);
+            return logger.exit(-2);
         }
     }
 
@@ -140,7 +152,8 @@ public class DbStorage extends Storage {
     public int deleteMessage(int message_id) {
         Connection connection = openConnection();
         if (connection == null) {
-            return -4;
+            logger.error("can't get connection");
+            return logger.exit(-4);
         }
 
         int action_id = getActionId();
@@ -154,25 +167,26 @@ public class DbStorage extends Storage {
                     (action_id++) + ", status = 3, time = '" +
                     time + "' WHERE message_id = " +
                     message_id + ";";
-            console.println(sql);
+            logger.debug(sql);
             statement.executeUpdate(sql);
             connection.close();
 
-            return 0;
+            return logger.exit(0);
         }
         catch (SQLException se) {
-            console.println(servletName + ": " + se.getMessage());
-            return -2;
+            logger.catching(se);
+            return logger.exit(-2);
         }
     }
 
     @Override
     public String getUsername(int user_id) {
-        //console.println(servletName + " : getUsername " + user_id);
+        logger.entry(user_id);
 
         Connection con = openConnection();
         if (con == null) {
-            return "#4";
+            logger.error("can't get connection");
+            return logger.exit("#4");
         }
 
         try {
@@ -180,43 +194,36 @@ public class DbStorage extends Storage {
 
             String sql = "SELECT name FROM users WHERE user_id = " +
                     user_id + ";";
+            logger.debug(sql);
             ResultSet result = statement.executeQuery(sql);
 
             if (!result.next()) {
                 // There is no such username in db
-                return "#2";
+                return logger.exit("#2");
             }
             if (!result.isLast()) {
-                // There is multiple username in db
-                return "#3";
+                // There are multiple usernames in db
+                return logger.exit("#3");
             }
 
             con.close();
 
-            return result.getString(1);
+            return logger.exit(result.getString(1));
         }
         catch (SQLException se) {
-            console.println(servletName + ": " + se.getMessage());
-            try {
-                if (!con.isClosed()) {
-                    con.close();
-                }
-            }
-            catch (SQLException se2) {
-                console.println(servletName + ": " + se2.getMessage());
-                return "#6";
-            }
-            return "#5";
+            logger.catching(se);
+            return logger.exit("#5");
         }
     }
 
     @Override
     public int getUserId(String username) {
-        //console.println(servletName + " : getUserId " + username);
+        logger.entry(username);
 
         Connection con = openConnection();
         if (con == null) {
-            return -4;
+            logger.error("can't get connection");
+            return logger.exit(-4);
         }
 
         try {
@@ -224,42 +231,36 @@ public class DbStorage extends Storage {
 
             String sql = "SELECT user_id FROM users WHERE name = '" +
                     username + "';";
+            logger.debug(sql);
             ResultSet result = statement.executeQuery(sql);
 
             if (!result.next()) {
                 // There is no such username in db
-                return -2;
+                return logger.exit(-2);
             }
             if (!result.isLast()) {
                 // There are multiple usernames in db
-                return -3;
+                return logger.exit(-3);
             }
 
             con.close();
 
-            return result.getInt(1);
+            return logger.exit(result.getInt(1));
         }
         catch (SQLException se) {
-            console.println(servletName + ": " + se.getMessage());
-            try {
-                if (!con.isClosed()) {
-                    con.close();
-                }
-            }
-            catch (SQLException se2) {
-                console.println(servletName + ": " + se2.getMessage());
-                return -6;
-            }
-            return -5;
+            logger.catching(se);
+            return logger.exit(-5);
         }
     }
 
     @Override
     public ArrayList<Integer> getUserIdInRoom(int room_id) {
-        Connection connection = openConnection();
+        logger.entry(room_id);
 
+        Connection connection = openConnection();
         if (connection == null) {
-            return new ArrayList<Integer>();
+            logger.error("can't get connection");
+            return logger.exit(new ArrayList<Integer>());
         }
 
         ArrayList<Integer> ans = new ArrayList<Integer>();
@@ -269,7 +270,7 @@ public class DbStorage extends Storage {
 
             String sql = "SELECT user_id FROM links WHERE room_id =" +
                     room_id + ";";
-            //err.println(sql);
+            logger.debug(sql);
             ResultSet result = statement.executeQuery(sql);
 
             JSONObject answer = new JSONObject();
@@ -280,20 +281,23 @@ public class DbStorage extends Storage {
                 ans.add(user_id);
             }
 
-            return ans;
+            return logger.exit(ans);
 
         }
         catch (SQLException se) {
-            console.println(servletName + ": " + se.getMessage());
-            return new ArrayList<Integer>();
+            logger.catching(se);
+            return logger.exit(new ArrayList<Integer>());
         }
     }
 
     @Override
     public int getRoomId(int message_id) {
+        logger.entry(message_id);
+
         Connection connection = openConnection();
         if (connection == null) {
-            return -4;
+            logger.error("can't get connection");
+            return logger.exit(-4);
         }
 
         int room_id;
@@ -301,6 +305,7 @@ public class DbStorage extends Storage {
             Statement statement = connection.createStatement();
             String sql = "SELECT room_id FROM messages WHERE message_id =" +
                             message_id + " ;";
+            logger.debug(sql);
             ResultSet result = statement.executeQuery(sql);
 
             if (!result.next()) {
@@ -313,24 +318,27 @@ public class DbStorage extends Storage {
 
             connection.close();
 
-            return room_id;
+            return logger.exit(room_id);
         }
         catch (SQLException se) {
-            console.println(servletName + ": " + se.getMessage());
-            return -5;
+            logger.catching(se);
+            return logger.exit(-5);
         }
     }
 
     private int getMessageId() {
+        logger.entry();
         Connection connection = openConnection();
         if (connection == null) {
-            return -4;
+            logger.error("can't get connection");
+            return logger.exit(-4);
         }
 
         int message_id;
         try {
             Statement statement = connection.createStatement();
             String sql = "SELECT MAX(message_id) " + "FROM messages;";
+            logger.debug(sql);
             ResultSet result = statement.executeQuery(sql);
 
             if (!result.next()) {
@@ -343,24 +351,28 @@ public class DbStorage extends Storage {
 
             connection.close();
 
-            return message_id;
+            return logger.exit(message_id);
         }
         catch (SQLException se) {
-            console.println(servletName + ": " + se.getMessage());
-            return -5;
+            logger.catching(se);
+            return logger.exit(-5);
         }
     }
 
     private int getActionId() {
+        logger.entry();
+
         Connection connection = openConnection();
         if (connection == null) {
-            return -4;
+            logger.error("can't get connection");
+            return logger.exit(-4);
         }
 
         int action_id;
         try {
             Statement statement = connection.createStatement();
             String sql = "SELECT MAX(action_id) " + "FROM messages;";
+            logger.debug(sql);
             ResultSet result = statement.executeQuery(sql);
 
             if (!result.next()) {
@@ -373,38 +385,33 @@ public class DbStorage extends Storage {
 
             connection.close();
 
-            return action_id;
+            return logger.exit(action_id);
         }
         catch (SQLException se) {
-            console.println(servletName + ": " + se.getMessage());
-            return -5;
+            logger.catching(se);
+            return logger.exit(-5);
         }
     }
 
     private Connection openConnection() {
-
+        logger.entry();
         Connection connection = null;
 
         try {
-            //console.println(servletName + ": try to load " + dbDriver);
+            logger.trace("try to load " + dbDriver);
             Class.forName(dbDriver);
 
-            //console.println(servletName + ": try to get connection");
+            logger.trace("try to get connection");
             connection = DriverManager.getConnection(dbName, dbUsername,
                     dbPassword);
+            logger.trace("done!");
         }
         catch (ClassNotFoundException cfe) {
-            console.println(servletName + ": So sad");
-            console.println(cfe.getMessage());
-
-            cfe.printStackTrace();
+            logger.catching(cfe);
         }
         catch (SQLException se) {
-            console.println(servletName + ": So sad 2");
-            console.println(se.getMessage());
-            //se.printStackTrace();
-            //System.out.println(se.getMessage());
+            logger.catching(se);
         }
-        return connection;
+        return logger.exit(connection);
     }
 }

@@ -110,7 +110,7 @@ $( document ).ready(function(){
     $("#CancelSettingsBtn").on('click', toggleSettings);
     
     
-    //alert(currentUserName);
+    //console.log(currentUserName);
 	   
 
 
@@ -129,14 +129,18 @@ function run() { // start of app. data restore.
         return; // Error
     }
     
-    setInterval(function(){ // Get Requset
-		//alert(actionID);    
-       var getRequest = newGetRequest(session_id,actionID,currentUserName)
-       getAction(getRequest); // getNewActions 
-       
+    setTimeout(function(){ // Get Requset
+		//console.log(actionID);
+        getMessages();
     }, 5000)
 }
 
+function getMessages() {
+    setTimeout(function(){
+        var getRequest = newGetRequest(session_id, actionID, currentUserName)
+        getAction(getRequest); // getNewActions
+    }, 1000);
+}
 
 function createAllMessages(data) {
     if (data != null) {
@@ -147,7 +151,7 @@ function createAllMessages(data) {
 
 function restore() {
 	if(typeof(Storage) == "undefined") {
-		alert('localStorage is not accessible');
+		console.log('localStorage is not accessible');
 		return;
 	}
     
@@ -179,7 +183,7 @@ function restore() {
 
 function store(){
     if(typeof(Storage) == "undefined") {
-		alert('localStorage is not accessible');
+		console.log('localStorage is not accessible');
 		return;
 	}
 
@@ -221,7 +225,7 @@ function editInList(messageID,newText){
 // Test Func. It woorks.
 function postNewMessage(data){ 
     
-    //alert(JSON.stringify(message1));
+    //console.log(JSON.stringify(message1));
     
     $.ajax({
     method: "POST",
@@ -230,20 +234,20 @@ function postNewMessage(data){
     data: data,    
     success: function(data){
         if(data == 0){
-        alert('post message succes');
+        console.log('post message succes');
     } else {
-        alert('post error in success');
+        console.log('post error in success');
     }
     },
     error: function(data){
-        alert('post error - error');
+        console.log('post error - error');
     }    
     });
 }
 
 function postDeleteMessage(data){ 
     
-    //alert(JSON.stringify(message1));
+    //console.log(JSON.stringify(message1));
     
     $.ajax({
     method: "POST",
@@ -252,13 +256,13 @@ function postDeleteMessage(data){
     data: data,    
     success: function(data){
         if(data == 0){
-        alert('del message succes');
+        console.log('del message succes');
     } else {
-        alert('del error in success');
+        console.log('del error in success');
     }
     },
     error: function(data){
-        alert('del error - error');
+        console.log('del error - error');
     }    
     });
 }
@@ -266,7 +270,7 @@ function postDeleteMessage(data){
 
 function postEditMessage(data){ 
     
-    //alert(JSON.stringify(message1));
+    //console.log(JSON.stringify(message1));
     
     $.ajax({
     method: "POST",
@@ -275,13 +279,13 @@ function postEditMessage(data){
     data: data,    
     success: function(data){
         if(data == 0){
-        alert('edit message succes');
+        console.log('edit message succes');
     } else {
-        alert('edit error in success');
+        console.log('edit error in success');
     }
     },
     error: function(data){
-        alert('edit error - error');
+        console.log('edit error - error');
     }    
     });
 }
@@ -289,7 +293,7 @@ function postEditMessage(data){
 
 function getAction(getRequest){ 
     
-    //alert(JSON.stringify(message1));
+    //console.log(JSON.stringify(message1));
     
     $.ajax({
     method: "GET",
@@ -298,14 +302,15 @@ function getAction(getRequest){
     data: getRequest,
     dataType: "html",
     success: function(data){
-        //alert("getActionSucces" + data);
+        //console.log("getActionSucces" + data);
         
         
         getActionFromServerWithJSON(data);
-        
+
+        getMessages();
     },
     error: function(data){
-        alert("getAction: getError");
+        console.log("getAction: getError");
     }    
     });
 }
@@ -321,11 +326,11 @@ function startSession(username){
         async : false, 
 		data: {username: username},
 		success: function(data) {
-			//alert("SessionID success" == data);
+			//console.log("SessionID success" == data);
             session_id = parseInt(data);
 		},
 		error: function(data) {
-			alert("SessionID error");
+			console.log("SessionID error");
             session_id = -1;
 		}
 })
@@ -351,7 +356,7 @@ function getActionFromServerWithJSON(jsonData){
             
             
             var status = messageFromServer.status;
-            //alert(status);
+            //console.log(status);
             if(status == 1){ // NEW
             
                 
@@ -479,7 +484,7 @@ var userMessageSended = function(){ // new message sended by user
 function deleteMessageByID(messageID){
 
     var messBlock = $(".media-list > .media[data-messageID="+messageID+"]");
-    //alert(messBlock.text());
+    //console.log(messBlock.text());
     messBlock.remove();
     deleteFromList(messageID);
     store();
@@ -487,13 +492,13 @@ function deleteMessageByID(messageID){
 }
 
 function editMessageByIDandNewText(messageID, messageText){
-    //alert("new text = " + messageText);
+    //console.log("new text = " + messageText);
     var messBlock = $(".media-list > .media[data-messageID="+messageID+"]");
     var textUI = messBlock.find(".message");
     textUI.text(messageText);
-    
-    
-    editInList(messageIDtoEdit,messageToEditGlobal.text());
+
+
+    editInList(messageID ,messageText);
     store();
 }
 
@@ -502,7 +507,7 @@ var userMessageDelete = function(evt){
     if (editMode)
         return;
     
-    var sure = confirm("Delete Message?"); // TODO: - Nice alert view. And Animation
+    var sure = confirm("Delete Message?"); // TODO: - Nice console.log view. And Animation
     if (!sure) {
         return false;
     }
@@ -511,7 +516,7 @@ var userMessageDelete = function(evt){
     var messageIDtoDelete = parseInt(messageToDelete.attr("data-messageID"));
     //deleteFromList(messageIDtoDelete);
     //messageToDelete.remove(); //TODO : - Awesome animation ASAP
-    alert('delete ' + messageIDtoDelete);
+    console.log('delete ' + messageIDtoDelete);
     
     var messageToDeleteRequestData = deleteMessageRequest(session_id,messageIDtoDelete);
     postDeleteMessage(messageToDeleteRequestData);
@@ -603,13 +608,13 @@ function checkServerStatus(){ // Rethink
         timeout:1000,
         statusCode: {
             200: function (response) {
-                alert('Working!');
+                console.log('Working!');
             },
             400: function (response) {
-                alert('Not working!');
+                console.log('Not working!');
             },
             0: function (response) {
-                alert('Not working!');
+                console.log('Not working!');
             }              
         }
  });

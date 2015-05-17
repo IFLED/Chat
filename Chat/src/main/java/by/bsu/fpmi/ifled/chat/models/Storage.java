@@ -1,6 +1,7 @@
 package by.bsu.fpmi.ifled.chat.models;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 
 abstract public class Storage {
     protected String servletName;
@@ -12,4 +13,6 @@ abstract public class Storage {
     abstract public int deleteMessage(int message_id);
     abstract public String getUsername(int user_id);
     abstract public int getUserId(String username);
+    abstract public ArrayList<Integer> getUserIdInRoom(int room_id);
+    abstract public int getRoomId(int message_id);
 }

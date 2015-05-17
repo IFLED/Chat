@@ -6,6 +6,7 @@ import org.json.simple.JSONObject;
 
 import java.io.PrintStream;
 import java.sql.*;
+import java.util.ArrayList;
 
 public class DbStorage extends Storage {
     private String dbDriver;
@@ -253,6 +254,73 @@ public class DbStorage extends Storage {
         }
     }
 
+    @Override
+    public ArrayList<Integer> getUserIdInRoom(int room_id) {
+        Connection connection = openConnection();
+
+        if (connection == null) {
+            return new ArrayList<Integer>();
+        }
+
+        ArrayList<Integer> ans = new ArrayList<Integer>();
+
+        try {
+            Statement statement = connection.createStatement();
+
+            String sql = "SELECT user_id FROM links WHERE room_id =" +
+                    room_id + ";";
+            //err.println(sql);
+            ResultSet result = statement.executeQuery(sql);
+
+            JSONObject answer = new JSONObject();
+            JSONArray messages = new JSONArray();
+
+            while (result.next()) {
+                int user_id = result.getInt(1);
+                ans.add(user_id);
+            }
+
+            return ans;
+
+        }
+        catch (SQLException se) {
+            console.println(servletName + ": " + se.getMessage());
+            return new ArrayList<Integer>();
+        }
+    }
+
+    @Override
+    public int getRoomId(int message_id) {
+        Connection connection = openConnection();
+        if (connection == null) {
+            return -4;
+        }
+
+        int room_id;
+        try {
+            Statement statement = connection.createStatement();
+            String sql = "SELECT room_id FROM messages WHERE message_id =" +
+                            message_id + " ;";
+            ResultSet result = statement.executeQuery(sql);
+
+            if (!result.next()) {
+                // There is no such message in db
+                room_id = -1;
+            }
+            else {
+                room_id = result.getInt(1);
+            }
+
+            connection.close();
+
+            return room_id;
+        }
+        catch (SQLException se) {
+            console.println(servletName + ": " + se.getMessage());
+            return -5;
+        }
+    }
+
     private int getMessageId() {
         Connection connection = openConnection();
         if (connection == null) {
@@ -266,7 +334,7 @@ public class DbStorage extends Storage {
             ResultSet result = statement.executeQuery(sql);
 
             if (!result.next()) {
-                // There is no any messages in db
+                // There are no any messages in db
                 message_id = 0;
             }
             else {

@@ -90,6 +90,7 @@ public class FirstServlet extends HttpServlet {
         storage.getUsername(storage.getUserId(username));
 
         out.println(userId);
+        out.close();
 
         err.println(myName + " - userId: " + userId);
         

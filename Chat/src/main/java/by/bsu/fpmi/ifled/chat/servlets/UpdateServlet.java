@@ -3,6 +3,8 @@ package by.bsu.fpmi.ifled.chat.servlets;
 import by.bsu.fpmi.ifled.chat.models.DbStorage;
 import by.bsu.fpmi.ifled.chat.models.Storage;
 import by.bsu.fpmi.ifled.chat.utils.CommonFunctions;
+import by.bsu.fpmi.ifled.chat.utils.LongPolling;
+
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -16,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import static by.bsu.fpmi.ifled.chat.servlets.ServletConstants.*;
 
@@ -50,7 +53,7 @@ public class UpdateServlet extends HttpServlet {
 		int result = update(session_id, message, out);
 		err.println(result);
 
-        System.err.println(myName + ": after all");
+        err.println(myName + ": after all");
     }
 	
 	int update(String sessionId, String jsonMessage, PrintWriter out) {
@@ -64,32 +67,34 @@ public class UpdateServlet extends HttpServlet {
 			return -1;
 		}
 
+        int ret = 0;
+        int room_id = -1; // will be defined later
 		String status = (String)obj.get("status");
-		
+        Storage storage = new DbStorage(myName, err, DB_DRIVER, DB_NAME,
+                DB_USERNAME, DB_PASSWORD);
 		try {
-            Storage storage = new DbStorage(myName, err, DB_DRIVER, DB_NAME,
-                    DB_USERNAME, DB_PASSWORD);
-
 			if (status.equals("new")) {
                 String username = (String)obj.get("username");
                 String text = CommonFunctions.fixSqlFieldValue((String)obj.get("text"));
-                int room_id = Integer.parseInt((String)obj.get("room_id"));
+                room_id = Integer.parseInt((String)obj.get("room_id"));
 
                 storage.addMessage(username, room_id, text);
 			}
 			else if (status.equals("edit")) {
                 String text = CommonFunctions.fixSqlFieldValue((String)obj.get("text"));
                 int msg_id = Integer.parseInt((String)obj.get("message_id"));
+                room_id  = storage.getRoomId(msg_id);
 
                 storage.editMessage(text, msg_id);
 			}
 			else if (status.equals("delete")) {
 				int msg_id = Integer.parseInt((String)obj.get("message_id"));
+                room_id = storage.getRoomId(msg_id);
 
                 storage.deleteMessage(msg_id);
 			}
 			else {
-				return -10;
+				ret = -10;
 			}
 		}
 //		catch (SQLException se) {
@@ -98,9 +103,27 @@ public class UpdateServlet extends HttpServlet {
 //		}
 		catch (Exception e) {
 			err.println(e.getMessage());
-			return -5;
+			ret = -5;
 		}
+
+        respondToAllInRoom(storage, room_id);
 		
-		return 0;
+		return ret;
 	}
+
+    void respondToAllInRoom(Storage storage, int room_id) {
+        ArrayList<Integer> users;
+        users = storage.getUserIdInRoom(room_id);
+        err.println("users: " + users);
+
+        for (Integer user_id : users) {
+            int action_id = LongPolling.getInstance().getActionId(user_id);
+            if (action_id == -1) {
+                continue;
+            }
+            String username =  storage.getUsername(user_id);
+            String response = storage.getMessages(action_id, username);
+            LongPolling.getInstance().respond(user_id, response);
+        }
+    }
 }

@@ -2,7 +2,6 @@ package by.bsu.fpmi.ifled.chat.servlets;
 
 import by.bsu.fpmi.ifled.chat.models.DbStorage;
 import by.bsu.fpmi.ifled.chat.models.Storage;
-import by.bsu.fpmi.ifled.chat.utils.CommonFunctions;
 import by.bsu.fpmi.ifled.chat.utils.LongPolling;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -75,13 +74,13 @@ public class UpdateServlet extends HttpServlet {
 		try {
 			if (status.equals("new")) {
                 String username = (String)obj.get("username");
-                String text = CommonFunctions.fixSqlFieldValue((String)obj.get("text"));
+                String text = (String)obj.get("text");
                 room_id = Integer.parseInt((String)obj.get("room_id"));
 
                 storage.addMessage(username, room_id, text);
 			}
 			else if (status.equals("edit")) {
-                String text = CommonFunctions.fixSqlFieldValue((String)obj.get("text"));
+                String text = (String)obj.get("text");
                 int msg_id = Integer.parseInt((String)obj.get("message_id"));
                 room_id  = storage.getRoomId(msg_id);
 

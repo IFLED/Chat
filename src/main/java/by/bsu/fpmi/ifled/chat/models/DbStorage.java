@@ -9,6 +9,8 @@ import org.json.simple.JSONObject;
 import java.sql.*;
 import java.util.ArrayList;
 
+import static by.bsu.fpmi.ifled.chat.utils.CommonFunctions.fixSqlFieldValue;
+
 public class DbStorage extends Storage {
     private String dbDriver;
     private String dbName;
@@ -101,7 +103,8 @@ public class DbStorage extends Storage {
             String sql = "INSERT INTO messages VALUES (" +
                     (message_id++) + ", " + (user_id) + ", " +
                     room_id + ", " + (action_id++) + ", '" +
-                    text + "', 1, '" + time + "');";
+                    fixSqlFieldValue(text) + "', 1, '" +
+                    fixSqlFieldValue(time) + "');";
             logger.debug(sql);
             statement.executeUpdate(sql);
             connection.close();
@@ -132,9 +135,9 @@ public class DbStorage extends Storage {
             Statement statement = connection.createStatement();
 
             String sql = "UPDATE messages SET text = '" +
-                    text + "', " + "action_id = " +
+                    fixSqlFieldValue(text) + "', " + "action_id = " +
                     (action_id++) + ", status = 2, time = '" +
-                    time + "' WHERE message_id = " +
+                    fixSqlFieldValue(time) + "' WHERE message_id = " +
                     message_id + ";";
             logger.debug(sql);
             statement.executeUpdate(sql);
@@ -165,7 +168,7 @@ public class DbStorage extends Storage {
             String sql = "UPDATE messages SET text = ''," +
                     "action_id = " +
                     (action_id++) + ", status = 3, time = '" +
-                    time + "' WHERE message_id = " +
+                    fixSqlFieldValue(time) + "' WHERE message_id = " +
                     message_id + ";";
             logger.debug(sql);
             statement.executeUpdate(sql);
@@ -230,7 +233,7 @@ public class DbStorage extends Storage {
             Statement statement = con.createStatement();
 
             String sql = "SELECT user_id FROM users WHERE name = '" +
-                    username + "';";
+                         fixSqlFieldValue(username) + "';";
             logger.debug(sql);
             ResultSet result = statement.executeQuery(sql);
 
@@ -272,9 +275,6 @@ public class DbStorage extends Storage {
                     room_id + ";";
             logger.debug(sql);
             ResultSet result = statement.executeQuery(sql);
-
-            JSONObject answer = new JSONObject();
-            JSONArray messages = new JSONArray();
 
             while (result.next()) {
                 int user_id = result.getInt(1);

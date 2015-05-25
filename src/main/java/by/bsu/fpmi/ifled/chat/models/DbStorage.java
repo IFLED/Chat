@@ -47,8 +47,8 @@ public class DbStorage extends Storage {
             Statement statement = connection.createStatement();
 
             String sql = "SELECT * FROM messages WHERE room_id in " +
-                    "(SELECT room_id FROM links WHERE user_id = " +
-                    user_id + ") and action_id > " + action_id +
+                    "(-1, (SELECT room_id FROM links WHERE user_id = " +
+                    user_id + ") ) and action_id > " + action_id +
                     " ORDER BY message_id;";
             logger.debug(sql);
             ResultSet result = statement.executeQuery(sql);
@@ -291,6 +291,40 @@ public class DbStorage extends Storage {
     }
 
     @Override
+    public ArrayList<Integer> getRoomIdFromUser(int user_id) {
+        logger.entry(user_id);
+
+        Connection connection = openConnection();
+        if (connection == null) {
+            logger.error("can't get connection");
+            return logger.exit(new ArrayList<Integer>());
+        }
+
+        ArrayList<Integer> ans = new ArrayList<Integer>();
+
+        try {
+            Statement statement = connection.createStatement();
+
+            String sql = "SELECT room_id FROM links WHERE user_id =" +
+                         user_id + ";";
+            logger.debug(sql);
+            ResultSet result = statement.executeQuery(sql);
+
+            while (result.next()) {
+                int room_id = result.getInt(1);
+                ans.add(room_id);
+            }
+
+            return logger.exit(ans);
+
+        }
+        catch (SQLException se) {
+            logger.catching(se);
+            return logger.exit(new ArrayList<Integer>());
+        }
+    }
+
+    @Override
     public int getRoomId(int message_id) {
         logger.entry(message_id);
 
@@ -339,6 +373,7 @@ public class DbStorage extends Storage {
         try {
             int user_id = getUserId();
             if (user_id < 0) {
+                logger.error("wrong user_id: user_id = " + user_id);
                 throw new SQLException("wrong user_id: " + user_id);
             }
 
@@ -351,6 +386,56 @@ public class DbStorage extends Storage {
             statement.executeUpdate(sql);
 
             sql = "INSERT INTO links VALUES (" + user_id + ", 1);";
+            logger.debug(sql);
+            statement.executeUpdate(sql);
+
+            connection.commit();
+
+            connection.close();
+
+            return logger.exit(user_id);
+        }
+        catch (SQLException se) {
+            logger.catching(se);
+            return logger.exit(-5);
+        }
+    }
+
+    @Override
+    public int changeName(String old_username, String new_username) {
+        logger.entry(old_username, new_username);
+
+        int user_id = getUserId(old_username);
+        if (user_id < 0) {
+            logger.error("can't get user_id: user_id = ", user_id);
+            return logger.exit(user_id - 10);
+        }
+
+        Connection connection = openConnection();
+        if (connection == null) {
+            logger.error("can't get connection");
+            return logger.exit(-4);
+        }
+
+
+        int message_id = getMessageId();
+        int action_id = getActionId();
+        String time = CommonFunctions.nowTime();
+        try {
+            connection.setAutoCommit(false);
+
+            Statement statement = connection.createStatement();
+            String sql = "UPDATE users SET name = '" +
+                         fixSqlFieldValue(new_username) +
+                         "' WHERE user_id = " + user_id + ";";
+            logger.debug(sql);
+            statement.executeUpdate(sql);
+
+            sql = "INSERT INTO messages VALUES (" +
+                    (message_id++) + ", " + (user_id) + ", " +
+                    -1 + ", " + (action_id++) + ", '" +
+                    fixSqlFieldValue(new_username) + "', 4, '" +
+                    fixSqlFieldValue(time) + "');";
             logger.debug(sql);
             statement.executeUpdate(sql);
 

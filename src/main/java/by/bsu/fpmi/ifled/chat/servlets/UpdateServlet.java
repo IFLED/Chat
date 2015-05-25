@@ -45,7 +45,7 @@ public class UpdateServlet extends HttpServlet {
 
         String message  = request.getParameter("message");
         String session_id = request.getParameter("session_id");
-        logger.debug("session_id = ", session_id);
+        logger.debug("session_id = " + session_id);
 
 		int result = update(session_id, message);
 		logger.debug("result = ", result);
@@ -71,27 +71,38 @@ public class UpdateServlet extends HttpServlet {
 		String status = (String)obj.get("status");
         Storage storage = new DbStorage(DB_DRIVER, DB_NAME,
                                         DB_USERNAME, DB_PASSWORD);
+        ArrayList<Integer> room_ids = new ArrayList<Integer>();
 		try {
 			if (status.equals("new")) {
                 String username = (String)obj.get("username");
                 String text = (String)obj.get("text");
                 room_id = Integer.parseInt((String)obj.get("room_id"));
 
-                storage.addMessage(username, room_id, text);
+                ret = storage.addMessage(username, room_id, text);
+                room_ids.add(room_id);
 			}
 			else if (status.equals("edit")) {
                 String text = (String)obj.get("text");
                 int msg_id = Integer.parseInt((String)obj.get("message_id"));
                 room_id  = storage.getRoomId(msg_id);
 
-                storage.editMessage(text, msg_id);
+                ret = storage.editMessage(text, msg_id);
+                room_ids.add(room_id);
 			}
 			else if (status.equals("delete")) {
 				int msg_id = Integer.parseInt((String)obj.get("message_id"));
                 room_id = storage.getRoomId(msg_id);
 
-                storage.deleteMessage(msg_id);
+                ret = storage.deleteMessage(msg_id);
+                room_ids.add(room_id);
 			}
+            else if (status.equals("change name")) {
+                String new_name = (String)obj.get("new_username");
+                String old_name = (String)obj.get("old_username");
+
+                ret = storage.changeName(old_name, new_name);
+                room_ids = storage.getRoomIdFromUser(storage.getUserId(new_name));
+            }
 			else {
 				ret = -10;
 			}
@@ -105,7 +116,9 @@ public class UpdateServlet extends HttpServlet {
 			ret = -5;
 		}
 
-        respondToAllInRoom(storage, room_id);
+        for (int roomId : room_ids) {
+            respondToAllInRoom(storage, roomId);
+        }
 		
 		return logger.exit(ret);
 	}

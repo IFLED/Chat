@@ -279,7 +279,7 @@ Love’s a game, want to play?</span>
                     
                     <div class="media NameChangeForm">
                         <a class="pull-left" href="#">
-                            <img class="media-object img-circle img-nameForm " src="resources/assets/img/anton.jpg" />                           </a>
+                            <img class="media-object img-circle img-nameForm " src="resources/assets/img/ava.png" />                           </a>
                             <div class="media-body" style="max-Width: 300px" >
                                 <input class="form-control"  id="NameForm" placeholder="Your Beautiful Name Is ..."  >
                                 </input>    

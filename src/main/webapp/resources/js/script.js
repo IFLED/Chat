@@ -65,7 +65,16 @@ var editMessageRequest = function (session_id, message_id, newMessage){
     };
 };
 
-
+var changeNameRequest = function(session_id, old_username, new_username) {
+    return {
+        session_id: session_id,
+        message: JSON.stringify( {
+                old_username: old_username,
+                new_username: new_username,
+                status: "change name"
+            })
+    }
+}
 
 // Struct for geting message from server
 var newGetRequest = function(session_id, action_id, username){
@@ -239,13 +248,17 @@ function postNewMessage(data){
     data: data,    
     success: function(data){
         if(data == 0){
-        console.log('post message succes');
-    } else {
-        console.log('post error in success');
-    }
+            console.log('post message succes');
+            return true;
+        }
+        else {
+            console.log('post error in success');
+            return false;
+        }
     },
     error: function(data){
         console.log('post error - error');
+        return false;
     }    
     });
 }
@@ -295,28 +308,49 @@ function postEditMessage(data){
     });
 }
 
+function postChangeName(data) {
+    $.ajax({
+        method: "POST",
+        url: "Update",
+        data: data,
+        success: function(data){
+            if(data == 0){
+                console.log('change name message succes');
+                return true;
+            } else {
+                console.log('change name error in success');
+                return false;
+            }
+        },
+        error: function(data){
+            console.log('change name error - error');
+            return false;
+        }
+    });
+}
+
 
 function getAction(getRequest){ 
     
     //console.log(JSON.stringify(message1));
     
     $.ajax({
-    method: "GET",
-    //url: "http://10.160.6.234:8080/Chat/Get",
-	url: "Get",
-    data: getRequest,
-    dataType: "html",
-    success: function(data){
-        //console.log("getActionSucces" + data);
-        
-        
-        getActionFromServerWithJSON(data);
+        method: "GET",
+        //url: "http://10.160.6.234:8080/Chat/Get",
+        url: "Get",
+        data: getRequest,
+        dataType: "html",
+        success: function(data){
+            //console.log("getActionSucces" + data);
 
-        getMessages();
-    },
-    error: function(data){
-        console.log("getAction: getError");
-    }    
+
+            getActionFromServerWithJSON(data);
+
+            getMessages();
+        },
+        error: function(data){
+                console.log("getAction: getError");
+        }
     });
 }
 
@@ -325,65 +359,47 @@ function startSession(username){
 }
 
 function getActionFromServerWithJSON(jsonData){
-        if (jsonData.length == 0)
-            return;
-        
-        
-        
-        var dataFromServer = $.parseJSON(jsonData);
-        var newMessages = dataFromServer["messages"];
-		
-        for( i = 0; i < newMessages.length; i++){
-            
-            var messageFromServer = newMessages[i];
-            
-            newActionId = parseInt(messageFromServer.action_id);
-			actionID = Math.max(actionID, newActionId);
-            
-            
-            var status = messageFromServer.status;
-            //console.log(status);
-            if(status == 1){ // NEW
-            
-                
-                var message = newMessage(messageFromServer.time,
-                                        messageFromServer.username,
-                                        messageFromServer.message_id,
-                                        messageFromServer.text);
+    if (jsonData.length == 0)
+        return;
 
+    var dataFromServer = $.parseJSON(jsonData);
+    var newMessages = dataFromServer["messages"];
 
+    for( i = 0; i < newMessages.length; i++){
 
+        var messageFromServer = newMessages[i];
 
-                addNewMessage(message);
-                
-                
-                
-                
-                } else if (status == 3) { // DELETE
-                    var messageIDToDelete = messageFromServer.message_id;
-                    
-                    deleteMessageByID(messageIDToDelete);
-                    
-                } else if(status == 2){// EDIT 
-                    var messageIDToEdit = messageFromServer.message_id;
-                    var editMessageText = messageFromServer.text;
-                    
-                    editMessageByIDandNewText(messageIDToEdit,editMessageText);
-                    
-                    
-                }
-            
-            
-            
-            
-            
+        newActionId = parseInt(messageFromServer.action_id);
+        actionID = Math.max(actionID, newActionId);
+
+        var status = messageFromServer.status;
+        //console.log(status);
+        if(status == 1) { // NEW
+            var message = newMessage(messageFromServer.time,
+                                    messageFromServer.username,
+                                    messageFromServer.message_id,
+                                    messageFromServer.text);
+            addNewMessage(message);
         }
-        
-        
-        
-        
+        else if (status == 3) { // DELETE
+            var messageIDToDelete = messageFromServer.message_id;
+
+            deleteMessageByID(messageIDToDelete);
+        }
+        else if(status == 2) {// EDIT
+            var messageIDToEdit = messageFromServer.message_id;
+            var editMessageText = messageFromServer.text;
+
+            editMessageByIDandNewText(messageIDToEdit,editMessageText);
+        }
+        else if (status == 4) { // change name
+            console.log("status = 4");
+        }
+        else {
+            console.log("some error in getting messages" + status);
+        }
     }
-    
+}
     
 
 // UI
@@ -422,48 +438,28 @@ function addNewMessage(message){
 var userMessageSended = function(){ // new message sended by user
     
     var messageForm = $("#MessageForm");
-    
-    
-    
+
     var prepareNewMessageForSend = newMessageSendRequest(session_id,
                                                         currentUserName,
                                                         1,
                                                         messageForm.val());
-                                                      
-                                                      
-                        
-                                  
-//    if (message.messageText.length == 0){
-//        return;
-//    }
     
-    if(!isMessageValid(prepareNewMessageForSend.message)){
-        
-        return;
+    if(!isMessageValid(prepareNewMessageForSend.message)) {
+        return ;
     }
-    
-    messageForm.val("");
-    
 
     //checkServerStatus();
-    
+
    // postAction(action);
     //addNewMessage(message);
     
-    postNewMessage(prepareNewMessageForSend);
-    
-    //store();
-    
+    if ( postNewMessage(prepareNewMessageForSend) ) {
+        messageForm.val("");
+    }
     
     scrollToBottom(chatView,true);
     
     messageFormRefresh();
-    
-    
-    
-    
-   
-    
 
 };
 
@@ -632,8 +628,6 @@ function scrollToBottom(view,animate){
 }  
 
 
-
-
 var registerKeyPress = function(editMode){
     $(document).off("keypress");
     
@@ -726,13 +720,17 @@ var toggleSettings = function(){
 }; 
 
 
-var applySettings = function(){
-    
+var applySettings = function() {
+
     var newName = $("#NameForm").val();
-    currentUserName = newName;
-    store();
-    
-    toggleSettings();
+    var dataToSend = changeNameRequest(session_id, currentUserName, newName);
+    if (postChangeName(dataToSend)) {
+        console.log("name changed!");
+        currentUserName = newName;
+        store();
+
+        toggleSettings();
+    }
 }
 
     var isMessageValid = function(messageText){
@@ -749,11 +747,4 @@ var applySettings = function(){
         }
         return false;
     }
-
-
-
-
-
-
-
 

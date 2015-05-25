@@ -6,7 +6,6 @@
 
 var chatView;  
 var messageList = [];
-var globalmessageID = 0;
 
 var editMode = false;
 var settingsMode = false;
@@ -132,7 +131,7 @@ function run() { // start of app. data restore.
     setTimeout(function(){ // Get Requset
 		//console.log(actionID);
         getMessages();
-    }, 5000)
+    }, 1000)
 }
 
 function getMessages() {
@@ -156,10 +155,11 @@ function restore() {
 	}
     
 	var item = localStorage.getItem("data");
-    var messageIDopt = localStorage.getItem("messageID");
-    if (messageIDopt != null){
-        globalmessageID = messageIDopt;
+
+    if (localStorage.getItem("messageID") != null) {
+        localStorage.removeItem("messageID");
     }
+
     var actionIDopt = localStorage.getItem("actionID");
     if (actionIDopt != null){
         actionID = actionIDopt;
@@ -174,9 +174,6 @@ function restore() {
         currentUserName = "GuestUser";
         
     }
-    
-    
-    
 
 	return item && JSON.parse(item);
 }
@@ -188,7 +185,9 @@ function store(){
 	}
 
 	localStorage.setItem("data", JSON.stringify(messageList));
-    localStorage.setItem("messageID", globalmessageID);
+    if (localStorage.getItem("messageID") != null) {
+        localStorage.removeItem("messageID");
+    }
     localStorage.setItem("actionID", actionID);
     localStorage.setItem("userName", currentUserName);
 }

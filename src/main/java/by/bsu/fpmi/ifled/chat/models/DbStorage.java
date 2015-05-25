@@ -326,6 +326,46 @@ public class DbStorage extends Storage {
         }
     }
 
+    @Override
+    public int registerUser(String username, String password) {
+        logger.entry(username, password);
+
+        Connection connection = openConnection();
+        if (connection == null) {
+            logger.error("can't get connection");
+            return logger.exit(-4);
+        }
+
+        try {
+            int user_id = getUserId();
+            if (user_id < 0) {
+                throw new SQLException("wrong user_id: " + user_id);
+            }
+
+            connection.setAutoCommit(false);
+
+            Statement statement = connection.createStatement();
+            String sql = "INSERT INTO users VALUES (" + user_id +
+                            ", '" + fixSqlFieldValue(username) + "');";
+            logger.debug(sql);
+            statement.executeUpdate(sql);
+
+            sql = "INSERT INTO links VALUES (" + user_id + ", 1);";
+            logger.debug(sql);
+            statement.executeUpdate(sql);
+
+            connection.commit();
+
+            connection.close();
+
+            return logger.exit(user_id);
+        }
+        catch (SQLException se) {
+            logger.catching(se);
+            return logger.exit(-5);
+        }
+    }
+
     private int getMessageId() {
         logger.entry();
         Connection connection = openConnection();
@@ -386,6 +426,40 @@ public class DbStorage extends Storage {
             connection.close();
 
             return logger.exit(action_id);
+        }
+        catch (SQLException se) {
+            logger.catching(se);
+            return logger.exit(-5);
+        }
+    }
+
+    private int getUserId() {
+        logger.entry();
+
+        Connection connection = openConnection();
+        if (connection == null) {
+            logger.error("can't get connection");
+            return logger.exit(-4);
+        }
+
+        int user_id;
+        try {
+            Statement statement = connection.createStatement();
+            String sql = "SELECT MAX(user_id) " + "FROM users;";
+            logger.debug(sql);
+            ResultSet result = statement.executeQuery(sql);
+
+            if (!result.next()) {
+                // There is no any messages in db
+                user_id = 0;
+            }
+            else {
+                user_id = result.getInt(1) + 1;
+            }
+
+            connection.close();
+
+            return logger.exit(user_id);
         }
         catch (SQLException se) {
             logger.catching(se);

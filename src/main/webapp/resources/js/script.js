@@ -119,14 +119,10 @@ $( document ).ready(function(){
 
 function run() { // start of app. data restore.
     
-    var data = restore() ;
+    var data = restore();
     createAllMessages(data);
     
     startSession(currentUserName); // post func - get session
-    
-    if(session_id == -1){
-        return; // Error
-    }
     
     setTimeout(function(){ // Get Requset
 		//console.log(actionID);
@@ -153,29 +149,43 @@ function restore() {
 		console.log('localStorage is not accessible');
 		return;
 	}
-    
-	var item = localStorage.getItem("data");
+
+    if (localStorage.getItem("data") != null) {
+        localStorage.removeItem("data");
+    }
 
     if (localStorage.getItem("messageID") != null) {
         localStorage.removeItem("messageID");
     }
 
-    var actionIDopt = localStorage.getItem("actionID");
-    if (actionIDopt != null){
-        actionID = actionIDopt;
+    if (localStorage.getItem("actionID") != null) {
+        localStorage.removeItem("actionID");
+    }
+
+    if (localStorage.getItem("action_id") != null) {
+        localStorage.removeItem("action_id");
+    }
+
+    if (localStorage.getItem("userName") != null) {
+        localStorage.removeItem("userName");
     }
     
-    var userNameopt = localStorage.getItem("userName");
+    var userNameopt = localStorage.getItem("username");
     if (userNameopt != null){
         currentUserName = userNameopt;
         $("#NameForm").val(currentUserName);
     } else {
-        
-        currentUserName = "GuestUser";
-        
+        console.log("username does not exits");
+        window.location.href = "/homepage.htm";
     }
 
-	return item && JSON.parse(item);
+    session_id = localStorage.getItem("session_id");
+    if (session_id == null) {
+        console.log("session_id does not exist");
+        window.location.href = "homepage.htm";
+    }
+
+	return null;
 }
 
 function store(){
@@ -184,12 +194,8 @@ function store(){
 		return;
 	}
 
-	localStorage.setItem("data", JSON.stringify(messageList));
-    if (localStorage.getItem("messageID") != null) {
-        localStorage.removeItem("messageID");
-    }
-    localStorage.setItem("actionID", actionID);
-    localStorage.setItem("userName", currentUserName);
+    localStorage.setItem("username", currentUserName);
+    localStorage.setItem("session_id", session_id);
 }
 
 function addMessageFromData(message){
@@ -316,25 +322,6 @@ function getAction(getRequest){
 
 
 function startSession(username){
-    
-    
-    $.ajax({
-        //url: "http://10.160.6.234:8080/Chat/First",
-		url: "First",
-		method: "POST",
-        async : false, 
-		data: {username: username},
-		success: function(data) {
-			//console.log("SessionID success" == data);
-            session_id = parseInt(data);
-		},
-		error: function(data) {
-			console.log("SessionID error");
-            session_id = -1;
-		}
-})
-    
-    
 }
 
 function getActionFromServerWithJSON(jsonData){

@@ -54,8 +54,8 @@ public class DbStorage extends Storage {
             ResultSet result = statement.executeQuery(sql);
 
             JSONObject answer = new JSONObject();
-            JSONArray messages = new JSONArray();
 
+            JSONArray messages = new JSONArray();
             while (result.next()) {
                 int user_id_now = result.getInt(2);
                 String user = getUsername(user_id_now);
@@ -63,11 +63,34 @@ public class DbStorage extends Storage {
                     logger.error("invalid user_id " + user);
                     return logger.exit("#4");
                 }
-                JSONObject msg = new Message(result, user).toJsonObject();
+                JSONObject msg = new Message(result).toJsonObject();
                 messages.add(msg);
             }
 
             answer.put("messages", messages);
+
+            if (messages.size() != 0) {
+                sql = "SELECT name, user_id FROM users WHERE user_id in " +
+                        "(SELECT user_id FROM links WHERE room_id in " +
+                        "(SELECT room_id FROM links WHERE user_id = " +
+                        "(SELECT user_id FROM users WHERE name = '" +
+                        fixSqlFieldValue(username) + "')) );";
+                logger.debug(sql);
+                result = statement.executeQuery(sql);
+
+                JSONArray usernames = new JSONArray();
+                while (result.next()) {
+                    int user_id_now = result.getInt(2);
+                    String name = result.getString(1);
+
+                    JSONObject user = new JSONObject();
+                    user.put("user_id", user_id_now);
+                    user.put("name", name);
+                    usernames.add(user);
+                }
+
+                answer.put("usernames", usernames);
+            }
 
             return logger.exit(answer.toJSONString());
 

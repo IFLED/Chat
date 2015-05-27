@@ -48,7 +48,9 @@ public class UpdateServlet extends HttpServlet {
         logger.debug("session_id = " + session_id);
 
 		int result = update(session_id, message);
-		logger.debug("result = ", result);
+		logger.debug("result = " + result);
+        out.println(result);
+        out.close();
 
         logger.exit();
     }

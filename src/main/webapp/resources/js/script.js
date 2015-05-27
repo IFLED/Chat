@@ -7,6 +7,8 @@
 var chatView;  
 var messageList = [];
 
+var usernames = {};
+
 var editMode = false;
 var settingsMode = false;
 
@@ -17,10 +19,10 @@ var currentUserName;
 var session_id;
 
 // Struct for adding message to UI
-var newMessage = function (time,userName,messageID,messageText){
+var newMessage = function (time,user_id,messageID,messageText){
     return {
         time: time,
-        userName: userName,
+        user_id: user_id,
         messageID: messageID,
         messageText: messageText,
         
@@ -203,6 +205,7 @@ function store(){
 		return;
 	}
 
+    localStorage.clear();
     localStorage.setItem("username", currentUserName);
     localStorage.setItem("session_id", session_id);
 }
@@ -309,24 +312,27 @@ function postEditMessage(data){
 }
 
 function postChangeName(data) {
+    var ans = undefined;
     $.ajax({
         method: "POST",
         url: "Update",
         data: data,
+        async: false,
         success: function(data){
-            if(data == 0){
+            if(data >= 0){
                 console.log('change name message succes');
-                return true;
+                ans = true;
             } else {
                 console.log('change name error in success');
-                return false;
+                ans = false;
             }
         },
         error: function(data){
             console.log('change name error - error');
-            return false;
+            ans = false;
         }
     });
+    return ans;
 }
 
 
@@ -358,14 +364,27 @@ function getAction(getRequest){
 function startSession(username){
 }
 
-function getActionFromServerWithJSON(jsonData){
+function getActionFromServerWithJSON(jsonData) {
     if (jsonData.length == 0)
         return;
 
     var dataFromServer = $.parseJSON(jsonData);
+
+    newUsernames = dataFromServer["usernames"];
+    if (newUsernames != undefined) {
+        for (i = 0; i < newUsernames.length; ++i) {
+            user_id = newUsernames[i].user_id;
+            name = newUsernames[i].name;
+            if (usernames[user_id] != name) {
+                usernames[user_id] = name;
+                setName(user_id, name);
+            }
+        }
+    }
+
     var newMessages = dataFromServer["messages"];
 
-    for( i = 0; i < newMessages.length; i++){
+    for (i = 0; i < newMessages.length; i++) {
 
         var messageFromServer = newMessages[i];
 
@@ -374,11 +393,11 @@ function getActionFromServerWithJSON(jsonData){
 
         var status = messageFromServer.status;
         //console.log(status);
-        if(status == 1) { // NEW
+        if (status == 1) { // NEW
             var message = newMessage(messageFromServer.time,
-                                    messageFromServer.username,
-                                    messageFromServer.message_id,
-                                    messageFromServer.text);
+                messageFromServer.user_id,
+                messageFromServer.message_id,
+                messageFromServer.text);
             addNewMessage(message);
         }
         else if (status == 3) { // DELETE
@@ -386,11 +405,11 @@ function getActionFromServerWithJSON(jsonData){
 
             deleteMessageByID(messageIDToDelete);
         }
-        else if(status == 2) {// EDIT
+        else if (status == 2) {// EDIT
             var messageIDToEdit = messageFromServer.message_id;
             var editMessageText = messageFromServer.text;
 
-            editMessageByIDandNewText(messageIDToEdit,editMessageText);
+            editMessageByIDandNewText(messageIDToEdit, editMessageText);
         }
         else if (status == 4) { // change name
             console.log("status = 4");
@@ -407,20 +426,20 @@ function addNewMessage(message){
 
     var messBlock = $(".media-list > .media:first").clone();
     messBlock.find(".message").text(message.messageText);
-    messBlock.find(".NickName").text(message.userName);
+    messBlock.find(".NickName").text(usernames[message.user_id]);
+    messBlock.attr("user_id", [message.user_id]);
     messBlock.find(".Time").text(message.time);
     messBlock.attr("data-messageID",[message.messageID]);
      
     messBlock.removeClass("hidden"); 
     
-    if(currentUserName == message.userName){ // SameUser 
-    messBlock.find(".deleteMessage").click(userMessageDelete); 
-    messBlock.find(".editMessage").click(userMessageEdit);
-    } else { // Can't delete and edit this message
-        
-    messBlock.find(".deleteMessage").remove(); 
-    messBlock.find(".editMessage").remove();
-        
+    if(currentUserName == usernames[message.user_id]) { // SameUser
+        messBlock.find(".deleteMessage").click(userMessageDelete);
+        messBlock.find(".editMessage").click(userMessageEdit);
+    }
+    else { // Can't delete and edit this message
+        messBlock.find(".deleteMessage").remove();
+        messBlock.find(".editMessage").remove();
     }
     
     
@@ -430,7 +449,11 @@ function addNewMessage(message){
     store();
     
 	scrollToBottom(chatView,false);
-}; 
+};
+
+function setName(user_id, name) {
+    $("[user_id = '" + user_id + "']").find(".NickName").text(name);
+}
 
 
 
@@ -724,7 +747,8 @@ var applySettings = function() {
 
     var newName = $("#NameForm").val();
     var dataToSend = changeNameRequest(session_id, currentUserName, newName);
-    if (postChangeName(dataToSend)) {
+    var result = postChangeName(dataToSend);
+    if (result) {
         console.log("name changed!");
         currentUserName = newName;
         store();

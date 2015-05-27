@@ -20,6 +20,7 @@
                     if (ans > 0) {
 
                         window.location.href ="./";
+                        localStorage.clear();
                         localStorage.setItem("username", $("#name").val());
                         localStorage.setItem("session_id", ans);
                     }

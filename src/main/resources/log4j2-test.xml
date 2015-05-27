@@ -11,11 +11,26 @@
             </PatternLayout>
         </File>
 
+        <JDBC name="databaseAppender" tableName="APPLICATION_LOG">
+            <ConnectionFactory class="by.bsu.fpmi.ifled.chat.utils.ConnectionFactory" method="getDatabaseConnection" />
+            <Column name="EVENT_ID" literal="nextval('APPLICATION_LOG_SEQUENCE'::regclass)" isUnicode="false" />
+            <Column name="EVENT_DATE" isEventTimestamp="true" isUnicode="false" />
+            <Column name="LEVEL" pattern="%level" isUnicode="false" />
+            <Column name="LOGGER" pattern="%logger" isUnicode="false" />
+            <Column name="MESSAGE" pattern="%message" isUnicode="false" />
+            <Column name="THROWABLE" pattern="%ex{full}" isUnicode="false" />
+        </JDBC>
+
     </Appenders>
     <Loggers>
-        <Root level="all">
-            <AppenderRef ref="MyFile"/>
+        <Root level="info">
             <AppenderRef ref="Console"/>
+        </Root>
+        <Root level="debug">
+            <AppenderRef ref="MyFile"/>
+        </Root>
+        <Root level="info">
+            <AppenderRef ref="databaseAppender"/>
         </Root>
     </Loggers>
 </Configuration>

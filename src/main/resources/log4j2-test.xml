@@ -19,18 +19,24 @@
             <Column name="LOGGER" pattern="%logger" isUnicode="false" />
             <Column name="MESSAGE" pattern="%message" isUnicode="false" />
             <Column name="THROWABLE" pattern="%ex{full}" isUnicode="false" />
+            <Filters>
+                <MarkerFilter marker="CONNECTION_POOL" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="debug" />
+            </Filters>
         </JDBC>
 
     </Appenders>
     <Loggers>
-        <Root level="info">
-            <AppenderRef ref="Console"/>
+        <Root level="all">
+            <AppenderRef ref="Console">
+                <ThresholdFilter level="all"/>
+            </AppenderRef>
+            <AppenderRef ref="MyFile">
+                <ThresholdFilter level="debug"/>
+            </AppenderRef>
+                <AppenderRef ref="databaseAppender">
+            </AppenderRef>
         </Root>
-        <Root level="debug">
-            <AppenderRef ref="MyFile"/>
-        </Root>
-        <Root level="info">
-            <AppenderRef ref="databaseAppender"/>
-        </Root>
+
     </Loggers>
 </Configuration>

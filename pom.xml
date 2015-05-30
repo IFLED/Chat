@@ -8,6 +8,7 @@
   <name>Chat Maven Webapp</name>
   <url>http://maven.apache.org</url>
   <dependencies>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -28,6 +29,12 @@
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
       <version>9.4-1201-jdbc41</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-dbcp</groupId>
+      <artifactId>commons-dbcp</artifactId>
+      <version>1.4</version>
     </dependency>
 
     <dependency>

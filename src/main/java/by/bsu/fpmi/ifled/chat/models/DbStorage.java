@@ -1,12 +1,16 @@
 package by.bsu.fpmi.ifled.chat.models;
 
 import by.bsu.fpmi.ifled.chat.utils.CommonFunctions;
+import by.bsu.fpmi.ifled.chat.utils.ConnectionPool;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 
 import static by.bsu.fpmi.ifled.chat.utils.CommonFunctions.fixSqlFieldValue;
@@ -232,9 +236,11 @@ public class DbStorage extends Storage {
                 return logger.exit("#3");
             }
 
+            String res = result.getString(1);
+
             con.close();
 
-            return logger.exit(result.getString(1));
+            return logger.exit(res);
         }
         catch (SQLException se) {
             logger.catching(se);
@@ -258,8 +264,8 @@ public class DbStorage extends Storage {
             String sql = "SELECT user_id FROM users WHERE name = '" +
                          fixSqlFieldValue(username) + "';";
             logger.debug(sql);
-            ResultSet result = statement.executeQuery(sql);
 
+            ResultSet result = statement.executeQuery(sql);
             if (!result.next()) {
                 // There is no such username in db
                 return logger.exit(-2);
@@ -268,10 +274,11 @@ public class DbStorage extends Storage {
                 // There are multiple usernames in db
                 return logger.exit(-3);
             }
+            int res = result.getInt(1);
 
             con.close();
 
-            return logger.exit(result.getInt(1));
+            return logger.exit(res);
         }
         catch (SQLException se) {
             logger.catching(se);
@@ -579,21 +586,8 @@ public class DbStorage extends Storage {
         logger.entry();
         Connection connection = null;
 
-        try {
-            logger.trace("try to load " + dbDriver);
-            Class.forName(dbDriver);
-
-            logger.trace("try to get connection");
-            connection = DriverManager.getConnection(dbName, dbUsername,
-                    dbPassword);
-            logger.trace("done!");
-        }
-        catch (ClassNotFoundException cfe) {
-            logger.catching(cfe);
-        }
-        catch (SQLException se) {
-            logger.catching(se);
-        }
+        connection = ConnectionPool.getConnection(dbDriver, dbName, dbUsername,
+                dbPassword);
         return logger.exit(connection);
     }
 }

@@ -18,9 +18,9 @@ import java.sql.Connection;
 import static by.bsu.fpmi.ifled.chat.servlets.ServletConstants.*;
 
 
-@WebServlet("/First")
-public class FirstServlet extends HttpServlet {
-    private static final Logger logger = LogManager.getLogger(FirstServlet.class);
+@WebServlet("/Login")
+public class LoginServlet extends HttpServlet {
+    private static final Logger logger = LogManager.getLogger(LoginServlet.class);
 
     static Connection connection;
     
@@ -44,27 +44,19 @@ public class FirstServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         
         PrintWriter out = response.getWriter();
-        
-        //response.setHeader("Access-Control-Allow-Origin", 
-        //                   "*");
 
         String username = request.getParameter("username");
-		
-		String userId;
+        String password = request.getParameter("password");
 
         Storage storage = new DbStorage(DB_DRIVER, DB_NAME,
                                         DB_USERNAME, DB_PASSWORD);
 
-        //userId = CommonFunctions.getUserId(connection, username,
-		//                                   myName, err);
+        int session_id = storage.getSession(username, password);
 
-        userId = new Integer(storage.getUserId(username)).toString();
-        storage.getUsername(storage.getUserId(username));
-
-        out.println(userId);
+        out.println(session_id);
         out.close();
 
-        logger.debug("userId: " + userId);
+        logger.debug("session_id: " + session_id);
         
         logger.exit();
     }

@@ -56,6 +56,9 @@ public class ConnectionPool {
                 "active: " + ((BasicDataSource)dataSource).getNumActive()+
                 " idle: " + ((BasicDataSource)dataSource).getNumIdle());
 
+        if (connection != null) {
+            logger.debug(CONNECTION_POOL, connection.hashCode());
+        }
         return logger.exit(connection);
     }
     public static DataSource setupDataSource(String dbDriver, String dbName,

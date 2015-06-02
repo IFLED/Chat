@@ -481,6 +481,16 @@ public class DbStorage extends Storage {
         }
     }
 
+    @Override
+    public int getSession(String username, String password) {
+        return getUserId(username);
+    }
+
+    @Override
+    public boolean checkSession(String username, int session_id) {
+        return session_id == getUserId(username);
+    }
+
     private int getMessageId() {
         logger.entry();
         Connection connection = openConnection();

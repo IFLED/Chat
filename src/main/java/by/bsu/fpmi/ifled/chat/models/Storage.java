@@ -14,4 +14,6 @@ abstract public class Storage {
     abstract public int getRoomId(int message_id);
     abstract public int registerUser(String username, String password);
     abstract public int changeName(String old_username, String new_username);
+    abstract public int getSession(String username, String password);
+    abstract public boolean checkSession(String username, int session_id);
 }

@@ -20,9 +20,8 @@
                     if (ans > 0) {
 
                         window.location.href ="./";
-                        localStorage.clear();
-                        localStorage.setItem("username", $("#name").val());
-                        localStorage.setItem("session_id", ans);
+                        $.cookie("username", $("#name").val());
+                        $.cookie("session_id", ans);
                     }
                     else if (ans == -2) {
                         $error.html("Invalid name/password");

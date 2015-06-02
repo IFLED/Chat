@@ -68,7 +68,7 @@ public class GetServlet extends HttpServlet {
             asyncContext.setTimeout(REQUESTS_TIMEOUT);
 
             asyncContext.addListener(
-                    new MyAsyncListener(storage.getUserId(username), storage)
+                    new SmartAsyncListener(storage.getUserId(username), storage)
             );
             LongPolling.getInstance().addAsync(storage.getUserId(username),
                                                action_id, asyncContext);
@@ -79,11 +79,11 @@ public class GetServlet extends HttpServlet {
 }
 
 
-class MyAsyncListener implements AsyncListener {
+class SmartAsyncListener implements AsyncListener {
     int user_id;
     Storage storage;
 
-    public MyAsyncListener(int user_id, Storage storage) {
+    public SmartAsyncListener(int user_id, Storage storage) {
         this.user_id = user_id;
         this.storage = storage;
     }

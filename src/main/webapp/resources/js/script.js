@@ -156,58 +156,32 @@ function createAllMessages(data) {
 }
 
 function restore() {
-	if(typeof(Storage) == "undefined") {
-		console.log('localStorage is not accessible');
-		return;
-	}
-
-    if (localStorage.getItem("data") != null) {
-        localStorage.removeItem("data");
-    }
-
-    if (localStorage.getItem("messageID") != null) {
-        localStorage.removeItem("messageID");
-    }
-
-    if (localStorage.getItem("actionID") != null) {
-        localStorage.removeItem("actionID");
-    }
-
-    if (localStorage.getItem("action_id") != null) {
-        localStorage.removeItem("action_id");
-    }
-
-    if (localStorage.getItem("userName") != null) {
-        localStorage.removeItem("userName");
-    }
-    
-    var userNameopt = localStorage.getItem("username");
+    var userNameopt = $.cookie("username");
     if (userNameopt != null){
         currentUserName = userNameopt;
         $("#NameForm").val(currentUserName);
     } else {
         console.log("username does not exits");
-        window.location.href = "/homepage.htm";
+        //window.location.href = "/homepage.htm";
     }
 
-    session_id = localStorage.getItem("session_id");
+    session_id = $.cookie("session_id");
     if (session_id == null) {
         console.log("session_id does not exist");
-        window.location.href = "homepage.htm";
+        //window.location.href = "homepage.htm";
     }
 
 	return null;
 }
 
 function store(){
-    if(typeof(Storage) == "undefined") {
-		console.log('localStorage is not accessible');
-		return;
-	}
+    $.cookie("username", currentUserName);
+    $.cookie("session_id", session_id);
+}
 
-    localStorage.clear();
-    localStorage.setItem("username", currentUserName);
-    localStorage.setItem("session_id", session_id);
+function invalidateSession() {
+    $.removeCookie("username");
+    $.removeCookie("session_id");
 }
 
 function addMessageFromData(message){

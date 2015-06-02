@@ -7,6 +7,8 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -394,6 +396,9 @@ public class DbStorage extends Storage {
     public int registerUser(String username, String password) {
         logger.entry(username, password);
 
+        String oldPassword = password;
+        password = hash(password);
+
         Connection connection = openConnection();
         if (connection == null) {
             logger.error("can't get connection");
@@ -411,7 +416,8 @@ public class DbStorage extends Storage {
 
             Statement statement = connection.createStatement();
             String sql = "INSERT INTO users VALUES (" + user_id +
-                            ", '" + fixSqlFieldValue(username) + "');";
+                            ", '" + fixSqlFieldValue(username) +
+                    "', '" + fixSqlFieldValue(password) +"');";
             logger.debug(sql);
             statement.executeUpdate(sql);
 
@@ -423,12 +429,39 @@ public class DbStorage extends Storage {
 
             connection.close();
 
-            return logger.exit(user_id);
+            return logger.exit(getSession(username, oldPassword));
         }
         catch (SQLException se) {
             logger.catching(se);
             return logger.exit(-5);
         }
+    }
+
+    static String sha1(String input) {
+        StringBuffer sb = new StringBuffer();
+        try {
+            MessageDigest mDigest = MessageDigest.getInstance("SHA1");
+            byte[] result = mDigest.digest(input.getBytes());
+
+            for (int i = 0; i < result.length; i++) {
+                sb.append(Integer.toString((result[i] & 0xff) + 0x100, 16).substring(1));
+            }
+        }
+        catch (NoSuchAlgorithmException nsae){
+            logger.catching(nsae);
+            return null;
+        }
+
+        return sb.toString();
+    }
+
+    private String hash(String arg) {
+        String result = "pioasdpinasoiudnoasdfio" + arg +
+                " some very strong salt asoijvaion avsdn uiasnvd";
+        result = sha1(result);
+
+        logger.info(result);
+        return result;
     }
 
     @Override
@@ -483,12 +516,60 @@ public class DbStorage extends Storage {
 
     @Override
     public int getSession(String username, String password) {
-        return getUserId(username);
+        int user_id = getUserId(username);
+        if (user_id < 0) {
+            return user_id;
+        }
+        String pass = getPassword(user_id);
+        if (pass == null) {
+            return -10;
+        }
+        if (!hash(password).equals(pass)) {
+            return -20;
+        }
+        return user_id;
     }
 
     @Override
     public boolean checkSession(String username, int session_id) {
         return session_id == getUserId(username);
+    }
+
+    private String getPassword(int user_id) {
+        if (user_id < 0) {
+            return null;
+        }
+
+        Connection connection = openConnection();
+        if (connection == null) {
+            logger.error("can't get connection");
+            return null;
+        }
+
+        try {
+            Statement statement = connection.createStatement();
+            String sql = "SELECT password FROM users WHERE user_id = " +
+                                                                user_id +";";
+            logger.debug(sql);
+            ResultSet result = statement.executeQuery(sql);
+            if (!result.next()) {
+                logger.error("There is no such username in db");
+                return logger.exit(null);
+            }
+            if (!result.isLast()) {
+                logger.error("There are multiple usernames in db");
+                return logger.exit(null);
+            }
+            String pass = result.getString(1);
+
+            connection.close();
+
+            return pass;
+        }
+        catch (SQLException se) {
+            logger.catching(se);
+            return null;
+        }
     }
 
     private int getMessageId() {

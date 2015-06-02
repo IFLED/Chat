@@ -7,12 +7,12 @@
 
     var onClick = function() {
         $(function() {
-
+            var pass = hash($("#password").val()).toString();
             $.ajax({
                 url: "Login",
                 method: "POST",
                 data: {username: $("#name").val(),
-                       password: $("#password").val()},
+                       password: pass},
                 dataType: "html",
                 success: function(data) {
                     $("#label").val("");
@@ -24,9 +24,13 @@
                     }
                     else if (ans == -2) {
                         $error.html("Invalid name/password");
+                        $.removeCookie('username');
+                        $.removeCookie('session_id');
                     }
                     else {
                         $error.html("else error");
+                        $.removeCookie('username');
+                        $.removeCookie('session_id');
                     }
                 }
             })
